@@ -160,7 +160,7 @@ export default function ReceptionPage() {
       {/* Top Banner */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Users size={28} color="#0d9488" />
             <span>Reception &amp; Walk-in Counter</span>
           </h1>
@@ -237,7 +237,7 @@ export default function ReceptionPage() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '12px' }}>
+            <div className="form-row-phone-age">
               <div className="form-group">
                 <label className="form-label">Phone Number *</label>
                 <input
@@ -263,7 +263,7 @@ export default function ReceptionPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Gender</label>
                 <select

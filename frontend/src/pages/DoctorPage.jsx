@@ -136,7 +136,7 @@ export default function DoctorPage() {
       {/* Top Bar with Doctor Switcher */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Stethoscope size={28} color="#4f46e5" />
             <span>Doctor Examination Dashboard</span>
           </h1>
@@ -259,7 +259,7 @@ export default function DoctorPage() {
                   <span className="badge badge-progress">IN PROGRESS</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                <div className="form-row" style={{ marginBottom: '14px' }}>
                   <div>
                     <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>PATIENT NAME</div>
                     <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{activeConsultation.patientName}</div>

@@ -76,16 +76,8 @@ export default function DisplayPage() {
   return (
     <div className="tv-display-layout">
       {/* Broadcast Header */}
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingBottom: '24px',
-          borderBottom: '2px solid #1e293b',
-          marginBottom: '32px',
-        }}
-      >
+      {/* Broadcast Header */}
+      <header className="tv-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div
             style={{
@@ -97,15 +89,16 @@ export default function DisplayPage() {
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow: '0 0 24px rgba(2, 132, 199, 0.4)',
+              flexShrink: 0,
             }}
           >
             <Activity size={32} color="#ffffff" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+            <h1 className="tv-title">
               PulseQueue Hospital Broadcast
             </h1>
-            <div style={{ color: '#94a3b8', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ color: '#94a3b8', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <span className="live-indicator">
                 <span className="live-dot"></span>
                 <span>LIVE SYSTEM FEED</span>
@@ -115,7 +108,7 @@ export default function DisplayPage() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <button
             onClick={() => {
               announcer.initAudioContext();
@@ -140,25 +133,14 @@ export default function DisplayPage() {
             <span>{soundEnabled ? 'Chime Active' : 'Chime Muted'}</span>
           </button>
 
-          <div
-            style={{
-              fontSize: '2.2rem',
-              fontWeight: 800,
-              fontFamily: 'monospace',
-              background: '#0f172a',
-              border: '1px solid #334155',
-              padding: '6px 20px',
-              borderRadius: '12px',
-              color: '#38bdf8',
-            }}
-          >
+          <div className="tv-clock">
             {currentTime}
           </div>
         </div>
       </header>
 
       {/* Main Screen Layout: Large "NOW SERVING" Grid on Left, "UPCOMING" Column on Right */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
+      <div className="tv-grid">
         {/* Left: NOW SERVING */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
@@ -194,16 +176,7 @@ export default function DisplayPage() {
               displayData.nowServing.map((item, idx) => (
                 <div
                   key={item.tokenNumber || idx}
-                  style={{
-                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                    border: '2px solid #0284c7',
-                    borderRadius: '18px',
-                    padding: '24px 32px',
-                    boxShadow: '0 10px 30px rgba(2, 132, 199, 0.25)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
+                  className="now-serving-card"
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -223,16 +196,7 @@ export default function DisplayPage() {
                         PROCEED INSIDE
                       </span>
                     </div>
-                    <div
-                      style={{
-                        fontSize: '4.5rem',
-                        fontWeight: 900,
-                        fontFamily: 'var(--font-heading)',
-                        color: '#ffffff',
-                        lineHeight: 1.05,
-                        textShadow: '0 0 20px rgba(56, 189, 248, 0.4)',
-                      }}
-                    >
+                    <div className="now-serving-token">
                       {item.tokenNumber}
                     </div>
                     <div style={{ fontSize: '1.25rem', color: '#cbd5e1', fontWeight: 600, marginTop: '8px' }}>
@@ -241,16 +205,7 @@ export default function DisplayPage() {
                   </div>
 
                   {/* Room & Doctor Box */}
-                  <div
-                    style={{
-                      background: '#0284c7',
-                      color: '#ffffff',
-                      borderRadius: '14px',
-                      padding: '20px 28px',
-                      textAlign: 'center',
-                      minWidth: '220px',
-                    }}
-                  >
+                  <div className="now-serving-dest">
                     <div style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.05em', opacity: 0.9 }}>
                       DESTINATION
                     </div>

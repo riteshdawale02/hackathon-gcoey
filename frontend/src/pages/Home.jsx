@@ -48,7 +48,7 @@ export default function Home() {
             <Sparkles size={14} />
             <span>Digital Hospital Flow Platform</span>
           </div>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '16px', color: '#0f172a' }}>
+          <h1 className="hero-title" style={{ marginBottom: '16px', color: '#0f172a' }}>
             Smart Hospital Token &amp; Live Queue System
           </h1>
           <p style={{ fontSize: '1.1rem', color: '#475569', lineHeight: 1.6, marginBottom: '24px' }}>

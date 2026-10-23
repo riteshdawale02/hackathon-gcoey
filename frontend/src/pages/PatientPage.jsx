@@ -158,7 +158,7 @@ export default function PatientPage() {
     <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>Patient Registration &amp; Token Pass</h1>
+        <h1 className="page-title" style={{ marginBottom: '8px' }}>Patient Registration &amp; Token Pass</h1>
         <p style={{ color: '#64748b' }}>
           Register for consultation, receive your digital queue token, and monitor your live waiting time.
         </p>
@@ -261,7 +261,7 @@ export default function PatientPage() {
             </div>
 
             {/* Waiting Metrics */}
-            <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', flex: 1, minWidth: '240px' }}>
               <div
                 style={{
                   background: '#ffffff',
@@ -269,7 +269,8 @@ export default function PatientPage() {
                   borderRadius: '12px',
                   padding: '16px 20px',
                   textAlign: 'center',
-                  minWidth: '130px',
+                  flex: 1,
+                  minWidth: '110px',
                 }}
               >
                 <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
@@ -287,7 +288,8 @@ export default function PatientPage() {
                   borderRadius: '12px',
                   padding: '16px 20px',
                   textAlign: 'center',
-                  minWidth: '140px',
+                  flex: 1,
+                  minWidth: '110px',
                 }}
               >
                 <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
@@ -403,7 +405,7 @@ export default function PatientPage() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '12px' }}>
+            <div className="form-row-phone-age">
               <div className="form-group">
                 <label className="form-label">Phone Number *</label>
                 <input
@@ -431,7 +433,7 @@ export default function PatientPage() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Gender</label>
                 <select

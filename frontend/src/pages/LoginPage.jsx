@@ -47,8 +47,10 @@ export default function LoginPage() {
         auto_select: false,
       });
 
-      // Render official Google button
+      // Render official Google button with mobile-friendly dynamic width
       googleBtnRef.current.innerHTML = '';
+      const containerWidth = googleBtnRef.current?.offsetWidth || 340;
+      const btnWidth = Math.min(360, Math.max(250, containerWidth));
       window.google.accounts.id.renderButton(googleBtnRef.current, {
         type: 'standard',
         shape: 'rectangular',
@@ -56,7 +58,7 @@ export default function LoginPage() {
         text: 'signin_with',
         size: 'large',
         logo_alignment: 'left',
-        width: 374,
+        width: btnWidth,
       });
 
       setGoogleInitialized(true);
@@ -108,7 +110,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: '440px', margin: '40px auto' }}>
+    <div style={{ maxWidth: '440px', margin: 'clamp(16px, 4vw, 40px) auto' }}>
       <div className="card" style={{ padding: '32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div
