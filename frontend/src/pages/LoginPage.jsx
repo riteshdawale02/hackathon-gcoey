@@ -339,7 +339,16 @@ export default function LoginPage() {
               className="btn btn-outline"
               style={{ fontSize: '0.8rem', padding: '8px 10px', justifyContent: 'flex-start' }}
             >
-              👨‍⚕️ Dr. Sharma (OPD)
+              👨‍⚕️ Dr. Sharma (CARD)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('dr.ananya@pulsequeue.com', 'Password123!', '/doctor')}
+              className="btn btn-outline"
+              style={{ fontSize: '0.8rem', padding: '8px 10px', justifyContent: 'flex-start', background: '#f0fdf4', borderColor: '#86efac', color: '#166534', fontWeight: 700 }}
+            >
+              👶 Dr. Ananya (Pediatrics)
             </button>
 
             <button
@@ -357,16 +366,7 @@ export default function LoginPage() {
               className="btn btn-outline"
               style={{ fontSize: '0.8rem', padding: '8px 10px', justifyContent: 'flex-start' }}
             >
-              👩‍⚕️ Dr. Chen (Gen)
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleQuickLogin('admin@pulsequeue.com', 'Password123!', '/')}
-              className="btn btn-outline"
-              style={{ fontSize: '0.8rem', padding: '8px 10px', justifyContent: 'flex-start' }}
-            >
-              🔐 Admin View
+              👩‍⚕️ Dr. Chen (GEN)
             </button>
           </div>
         </div>

@@ -45,10 +45,13 @@ const INITIAL_QUEUE_DATA = {
     { id: 11, tokenNumber: 'ORTH-001', departmentCode: 'ORTH', departmentId: 3, patientName: 'Robert Davis', patientPhone: '9234567890', reasonForVisit: 'Right knee swelling & acute pain', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 10, patientsAhead: 0 },
     { id: 12, tokenNumber: 'ORTH-002', departmentCode: 'ORTH', departmentId: 3, patientName: 'Carlos Gomez', patientPhone: '9890123456', reasonForVisit: 'Lumbar back spasm after heavy lifting', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 20, patientsAhead: 1 },
 
-    // Pediatrics
-    { id: 13, tokenNumber: 'PED-001', departmentCode: 'PED', departmentId: 4, patientName: 'Baby Leo (Age 1)', patientPhone: '9901234567', reasonForVisit: '6-month developmental vaccine review', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 10, patientsAhead: 0 },
+    // Pediatrics (Dr. Ananya Sharma - Chamber 104)
+    { id: 13, tokenNumber: 'PED-001', departmentCode: 'PED', departmentId: 4, patientName: 'Aarav Sharma (Age 4)', patientPhone: '9876543210', reasonForVisit: 'High fever (103°F) & persistent croup cough', status: 'WAITING', isPriority: true, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 5, patientsAhead: 0 },
+    { id: 14, tokenNumber: 'PED-002', departmentCode: 'PED', departmentId: 4, patientName: 'Baby Leo (Age 1)', patientPhone: '9901234567', reasonForVisit: '6-month developmental vaccine & wellness checkup', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 10, patientsAhead: 1 },
+    { id: 15, tokenNumber: 'PED-003', departmentCode: 'PED', departmentId: 4, patientName: 'Zara Patel (Age 7)', patientPhone: '9123456789', reasonForVisit: 'Pediatric asthma wheezing & allergy evaluation', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 20, patientsAhead: 2 },
+    { id: 16, tokenNumber: 'PED-004', departmentCode: 'PED', departmentId: 4, patientName: 'Kabir Verma (Age 2)', patientPhone: '9234567891', reasonForVisit: 'Acute ear ache & routine wellness review', status: 'WAITING', isPriority: false, doctorId: null, doctorName: null, roomNumber: null, estimatedWaitMinutes: 30, patientsAhead: 3 },
   ],
-  counters: { CARD: 6, GEN: 4, ORTH: 2, PED: 1 },
+  counters: { CARD: 6, GEN: 4, ORTH: 2, PED: 4 },
 };
 
 function getLocalQueue() {
@@ -57,7 +60,21 @@ function getLocalQueue() {
     localStorage.setItem('pulsequeue_local_queue', JSON.stringify(INITIAL_QUEUE_DATA));
     return INITIAL_QUEUE_DATA;
   }
-  return JSON.parse(saved);
+  const parsed = JSON.parse(saved);
+  // Ensure rich Pediatrics tokens exist if saved queue was loaded earlier
+  const pedCount = parsed.tokens ? parsed.tokens.filter((t) => t.departmentCode === 'PED').length : 0;
+  if (pedCount < 2) {
+    const pedTokens = INITIAL_QUEUE_DATA.tokens.filter((t) => t.departmentCode === 'PED');
+    // Filter out duplicates
+    const existingNums = new Set(parsed.tokens.map((t) => t.tokenNumber));
+    pedTokens.forEach((pt) => {
+      if (!existingNums.has(pt.tokenNumber)) parsed.tokens.push(pt);
+    });
+    parsed.counters = parsed.counters || {};
+    parsed.counters.PED = Math.max(parsed.counters.PED || 0, 4);
+    localStorage.setItem('pulsequeue_local_queue', JSON.stringify(parsed));
+  }
+  return parsed;
 }
 
 function saveLocalQueue(data) {

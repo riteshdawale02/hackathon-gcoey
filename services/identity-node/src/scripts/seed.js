@@ -25,6 +25,7 @@ async function runSeed() {
       ('dr.sharma@pulsequeue.com', $1, 'DOCTOR'),
       ('dr.chen@pulsequeue.com', $1, 'DOCTOR'),
       ('dr.patel@pulsequeue.com', $1, 'DOCTOR'),
+      ('dr.ananya@pulsequeue.com', $1, 'DOCTOR'),
       ('patient@example.com', $1, 'PATIENT')
     `, [hash]);
 
@@ -42,13 +43,14 @@ async function runSeed() {
       INSERT INTO doctors (user_id, department_id, full_name, room_number, is_available) VALUES
       (3, 2, 'Dr. Rajesh Sharma', 'Room 101', TRUE),
       (4, 1, 'Dr. Emily Chen', 'Room 203', TRUE),
-      (5, 3, 'Dr. Marcus Vance', 'Room 105', TRUE)
+      (5, 3, 'Dr. Marcus Vance', 'Room 105', TRUE),
+      (6, 4, 'Dr. Ananya Sharma', 'Chamber 104', TRUE)
     `);
 
     // Patients
     await client.query(`
       INSERT INTO patients (user_id, full_name, phone, age, gender) VALUES
-      (6, 'John Doe', '9876543210', 34, 'MALE'),
+      (7, 'John Doe', '9876543210', 34, 'MALE'),
       (NULL, 'Sarah Connor', '9123456780', 42, 'FEMALE'),
       (NULL, 'Robert Davis', '9234567890', 68, 'MALE'),
       (NULL, 'Aisha Khan', '9345678901', 27, 'FEMALE')

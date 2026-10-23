@@ -64,7 +64,7 @@ class AudioAnnouncer {
       try {
         window.speechSynthesis.cancel(); // Cancel any existing speech
         const speech = new SpeechSynthesisUtterance();
-        speech.text = `Attention please. Token ${tokenNumber}, please proceed to ${roomNumber || 'consultation room'}.`;
+        speech.text = `Attention please. Token ${tokenNumber}, please proceed to ${roomNumber || 'consultation room'}${doctorName ? ' for ' + doctorName : ''}.`;
         speech.lang = 'en-US';
         speech.rate = 0.95;
         speech.pitch = 1.0;

@@ -8,23 +8,41 @@ import {
   User,
   Activity,
   AlertCircle,
-  FileText
+  FileText,
+  DoorOpen,
+  Building2,
+  Sparkles,
+  MapPin,
+  Check
 } from 'lucide-react';
 import { queueApi, departmentApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { announcer } from '../utils/audioAnnouncer';
 
+const HOSPITAL_CHAMBERS = [
+  { code: 'Chamber 104', label: 'Chamber 104 (Pediatrics & Child Care Clinic)', dept: 'PED' },
+  { code: 'Chamber 101', label: 'Chamber 101 (Cardiology Wing)', dept: 'CARD' },
+  { code: 'Chamber 203', label: 'Chamber 203 (General Medicine OPD)', dept: 'GEN' },
+  { code: 'Chamber 105', label: 'Chamber 105 (Orthopedics & Sports Medicine)', dept: 'ORTH' },
+  { code: 'Chamber 102', label: 'Chamber 102 (Pediatric Immunization & Growth)', dept: 'PED' },
+  { code: 'Chamber 106', label: 'Chamber 106 (Pediatric Special Care)', dept: 'PED' },
+  { code: 'Chamber 202', label: 'Chamber 202 (OPD Consultation)', dept: 'GEN' },
+];
+
 export default function DoctorPage() {
   const { user } = useAuth();
 
   // Active doctor credentials (can switch between doctors for demo)
-  const [doctorList] = useState([
-    { id: 1, name: 'Dr. Rajesh Sharma', deptCode: 'CARD', room: 'Room 101' },
-    { id: 2, name: 'Dr. Emily Chen', deptCode: 'GEN', room: 'Room 203' },
-    { id: 3, name: 'Dr. Marcus Vance', deptCode: 'ORTH', room: 'Room 105' },
+  const [doctorList, setDoctorList] = useState([
+    { id: 1, name: 'Dr. Rajesh Sharma', deptCode: 'CARD', room: 'Room 101', specialty: 'Cardiology' },
+    { id: 2, name: 'Dr. Emily Chen', deptCode: 'GEN', room: 'Room 203', specialty: 'General Medicine' },
+    { id: 3, name: 'Dr. Marcus Vance', deptCode: 'ORTH', room: 'Room 105', specialty: 'Orthopedics' },
+    { id: 4, name: 'Dr. Ananya Sharma', deptCode: 'PED', room: 'Chamber 104', specialty: 'Pediatrics / Child Care' },
   ]);
 
   const [currentDoctor, setCurrentDoctor] = useState(doctorList[0]);
+  const [showChamberModal, setShowChamberModal] = useState(false);
+  const [customChamberInput, setCustomChamberInput] = useState('');
   const [queueData, setQueueData] = useState({
     waiting: [],
     inProgress: [],
@@ -35,6 +53,28 @@ export default function DoctorPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [consultNotes, setConsultNotes] = useState('');
+
+  // Handle Chamber Assignment / Change ("Asking for Chamber")
+  const handleSetChamber = (chamberCode) => {
+    if (!chamberCode || !chamberCode.trim()) return;
+    const cleanRoom = chamberCode.trim();
+    const updated = { ...currentDoctor, room: cleanRoom };
+    setCurrentDoctor(updated);
+    setDoctorList((prev) => prev.map((d) => (d.id === currentDoctor.id ? { ...d, room: cleanRoom } : d)));
+    localStorage.setItem(`pulsequeue_chamber_${currentDoctor.id}`, cleanRoom);
+    setShowChamberModal(false);
+    setCustomChamberInput('');
+    setMessage(`Consultation Chamber set to "${cleanRoom}" for ${currentDoctor.name}!`);
+    setTimeout(() => setMessage(''), 4000);
+  };
+
+  // Sync saved chamber for active doctor
+  useEffect(() => {
+    const saved = localStorage.getItem(`pulsequeue_chamber_${currentDoctor.id}`);
+    if (saved && saved !== currentDoctor.room) {
+      setCurrentDoctor((prev) => ({ ...prev, room: saved }));
+    }
+  }, [currentDoctor.id]);
 
   // If user is logged in as doctor, sync with profile
   useEffect(() => {
@@ -133,7 +173,7 @@ export default function DoctorPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      {/* Top Bar with Doctor Switcher */}
+      {/* Top Bar with Doctor Switcher & Chamber Assignment ("Asking for Chamber") */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -145,33 +185,198 @@ export default function DoctorPage() {
           </p>
         </div>
 
-        {/* Doctor Selector */}
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>CURRENT DOCTOR</div>
-            <select
-              className="form-select"
-              style={{ border: 'none', padding: '0', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
-              value={currentDoctor.id}
-              onChange={(e) => {
-                const doc = doctorList.find((d) => d.id === parseInt(e.target.value, 10));
-                if (doc) setCurrentDoctor(doc);
-              }}
-            >
-              {doctorList.map((doc) => (
-                <option key={doc.id} value={doc.id}>
-                  {doc.name} ({doc.room} - {doc.deptCode})
-                </option>
-              ))}
-            </select>
+        {/* Doctor & Chamber Setup Area */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Doctor Switcher */}
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-sm)' }}>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>CURRENT DOCTOR</div>
+              <select
+                className="form-select"
+                style={{ border: 'none', padding: '0', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+                value={currentDoctor.id}
+                onChange={(e) => {
+                  const doc = doctorList.find((d) => d.id === parseInt(e.target.value, 10));
+                  if (doc) {
+                    const savedChamber = localStorage.getItem(`pulsequeue_chamber_${doc.id}`);
+                    setCurrentDoctor(savedChamber ? { ...doc, room: savedChamber } : doc);
+                  }
+                }}
+              >
+                {doctorList.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.name} ({doc.deptCode} - {doc.room})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="badge badge-progress">{currentDoctor.deptCode} OPD</span>
           </div>
-          <span className="badge badge-progress">{currentDoctor.deptCode} OPD</span>
+
+          {/* Chamber Assignment ("Asking for Chamber") */}
+          <div
+            onClick={() => setShowChamberModal(true)}
+            style={{
+              background: '#f0fdf4',
+              border: '1px solid #86efac',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.15s ease',
+            }}
+            title="Click to change or assign consultation chamber"
+          >
+            <div style={{ width: '32px', height: '32px', background: '#dcfce7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <DoorOpen size={18} color="#15803d" />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>
+                CONSULTATION CHAMBER
+              </div>
+              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: '#14532d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>{currentDoctor.room}</span>
+                <span style={{ fontSize: '0.72rem', color: '#16a34a', textDecoration: 'underline' }}>✏️ Change</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Chamber Selection Modal ("Asking for Chamber") */}
+      {showChamberModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              background: '#ffffff',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '40px', height: '40px', background: '#e0f2fe', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}>
+                  <Building2 size={22} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+                    Assign Consultation Chamber
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: '#64748b' }}>
+                    Select or enter the chamber for <strong>{currentDoctor.name}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowChamberModal(false)}
+                className="btn btn-outline"
+                style={{ padding: '4px 8px', minHeight: '32px', fontSize: '0.8rem' }}
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <p style={{ fontSize: '0.88rem', color: '#475569', marginBottom: '16px' }}>
+              When you call patients, this chamber will be announced over the hospital loudspeakers and displayed on the lobby TV screens.
+            </p>
+
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+              Hospital Chambers:
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto', marginBottom: '16px' }}>
+              {HOSPITAL_CHAMBERS.map((ch) => {
+                const isSelected = currentDoctor.room === ch.code;
+                return (
+                  <button
+                    key={ch.code}
+                    type="button"
+                    onClick={() => handleSetChamber(ch.code)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: isSelected ? '2px solid #0284c7' : '1px solid #e2e8f0',
+                      background: isSelected ? '#f0f9ff' : '#ffffff',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.92rem', color: isSelected ? '#0369a1' : '#0f172a' }}>
+                        {ch.code}
+                      </div>
+                      <div style={{ fontSize: '0.76rem', color: '#64748b' }}>{ch.label}</div>
+                    </div>
+                    {isSelected && <span className="badge badge-completed"><Check size={14} /> Active</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Chamber Input */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                Or Enter Custom Chamber / Room Number:
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Chamber 104-B, Room 302..."
+                  value={customChamberInput}
+                  onChange={(e) => setCustomChamberInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSetChamber(customChamberInput);
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSetChamber(customChamberInput)}
+                  className="btn btn-primary"
+                  disabled={!customChamberInput.trim()}
+                >
+                  Set Chamber
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {message && (
-        <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#047857', padding: '12px 18px', borderRadius: '8px', fontWeight: 700 }}>
-          {message}
+        <div style={{ background: '#ecfdf5', border: '1px solid #6ee7b7', color: '#047857', padding: '12px 18px', borderRadius: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Sparkles size={20} color="#059669" />
+          <span>{message}</span>
         </div>
       )}
 
@@ -232,10 +437,25 @@ export default function DoctorPage() {
         <div className="card" style={{ border: '2px solid #93c5fd' }}>
           <div className="card-header">
             <div>
-              <span className="badge badge-progress" style={{ marginBottom: '6px' }}>CURRENT CONSULTATION</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span className="badge badge-progress">CURRENT CONSULTATION</span>
+                <span className="badge" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>
+                  <DoorOpen size={12} /> {currentDoctor.room}
+                </span>
+              </div>
               <h2 className="card-title">
                 <span>{currentDoctor.room} - Active Patient</span>
               </h2>
+              <div style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '2px' }}>
+                Attending: <strong>{currentDoctor.name}</strong> ({currentDoctor.deptCode} OPD) •{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowChamberModal(true)}
+                  style={{ background: 'none', border: 'none', color: '#0284c7', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
+                >
+                  Change Chamber
+                </button>
+              </div>
             </div>
             {/* BIG CALL NEXT BUTTON */}
             <button

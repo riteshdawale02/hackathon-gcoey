@@ -12,6 +12,7 @@ INSERT INTO users (email, password_hash, role) VALUES
 ('dr.sharma@pulsequeue.com', '$2a$10$w3HkUoX7oWwU9a6bUjE6a.cvyC7o4e9JqQ1e0n1g9uR0z0w9x8yza', 'DOCTOR'),
 ('dr.chen@pulsequeue.com', '$2a$10$w3HkUoX7oWwU9a6bUjE6a.cvyC7o4e9JqQ1e0n1g9uR0z0w9x8yza', 'DOCTOR'),
 ('dr.patel@pulsequeue.com', '$2a$10$w3HkUoX7oWwU9a6bUjE6a.cvyC7o4e9JqQ1e0n1g9uR0z0w9x8yza', 'DOCTOR'),
+('dr.ananya@pulsequeue.com', '$2a$10$w3HkUoX7oWwU9a6bUjE6a.cvyC7o4e9JqQ1e0n1g9uR0z0w9x8yza', 'DOCTOR'),
 ('patient@example.com', '$2a$10$w3HkUoX7oWwU9a6bUjE6a.cvyC7o4e9JqQ1e0n1g9uR0z0w9x8yza', 'PATIENT');
 
 -- Insert Departments
@@ -25,11 +26,12 @@ INSERT INTO departments (code, name, description, is_active) VALUES
 INSERT INTO doctors (user_id, department_id, full_name, room_number, is_available) VALUES
 (3, 2, 'Dr. Rajesh Sharma', 'Room 101', TRUE),
 (4, 1, 'Dr. Emily Chen', 'Room 203', TRUE),
-(5, 3, 'Dr. Marcus Vance', 'Room 105', TRUE);
+(5, 3, 'Dr. Marcus Vance', 'Room 105', TRUE),
+(6, 4, 'Dr. Ananya Sharma', 'Chamber 104', TRUE);
 
 -- Insert Sample Patients
 INSERT INTO patients (user_id, full_name, phone, age, gender) VALUES
-(6, 'John Doe', '9876543210', 34, 'MALE'),
+(7, 'John Doe', '9876543210', 34, 'MALE'),
 (NULL, 'Sarah Connor', '9123456780', 42, 'FEMALE'),
 (NULL, 'Robert Davis', '9234567890', 68, 'MALE'),
 (NULL, 'Aisha Khan', '9345678901', 27, 'FEMALE');
