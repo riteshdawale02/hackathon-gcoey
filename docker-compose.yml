@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pulsequeue-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulsequeue-net
+
+  identity-service:
+    build:
+      context: ./services/identity-node
+      dockerfile: Dockerfile
+    container_name: pulsequeue-identity-service
+    environment:
+      PORT: 5001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: identity_db
+      JWT_SECRET: pulsequeue_super_secret_jwt_key_2026
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pulsequeue-net
+
+  queue-service:
+    build:
+      context: ./services/queue-java
+      dockerfile: Dockerfile
+    container_name: pulsequeue-queue-service
+    environment:
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: queue_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/queue_db
+      JWT_SECRET: pulsequeue_super_secret_jwt_key_2026
+      IDENTITY_SERVICE_URL: http://identity-service:5001
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      identity-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - pulsequeue-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pulsequeue-frontend
+    ports:
+      - "80:80"
+      - "3000:80"
+    depends_on:
+      - identity-service
+      - queue-service
+    networks:
+      - pulsequeue-net
+
+networks:
+  pulsequeue-net:
+    driver: bridge
+
+volumes:
+  pgdata:
