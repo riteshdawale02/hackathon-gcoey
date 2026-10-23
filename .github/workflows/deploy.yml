@@ -1,0 +1,102 @@
+name: PulseQueue CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: pulsequeue-demo-eks
+
+jobs:
+  build-and-test:
+    name: Build & Test Microservices
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            services/identity-node/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install & Test Node Identity Service
+        run: |
+          cd services/identity-node
+          npm ci
+          node -e "require('./src/config/memoryStore')"
+
+      - name: Build React Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Java Spring Boot Queue Service
+        run: |
+          cd services/queue-java
+          mvn clean package -DskipTests
+
+  deploy-aws:
+    name: Build Docker Images, Push to ECR & Deploy to EKS
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Images
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # 1. Identity Node Service
+          docker build -t $REGISTRY/pulsequeue/identity-service:$IMAGE_TAG -t $REGISTRY/pulsequeue/identity-service:latest services/identity-node
+          docker push $REGISTRY/pulsequeue/identity-service:$IMAGE_TAG
+          docker push $REGISTRY/pulsequeue/identity-service:latest
+
+          # 2. Java Queue Service
+          docker build -t $REGISTRY/pulsequeue/queue-service:$IMAGE_TAG -t $REGISTRY/pulsequeue/queue-service:latest services/queue-java
+          docker push $REGISTRY/pulsequeue/queue-service:$IMAGE_TAG
+          docker push $REGISTRY/pulsequeue/queue-service:latest
+
+          # 3. React Frontend
+          docker build -t $REGISTRY/pulsequeue/frontend:$IMAGE_TAG -t $REGISTRY/pulsequeue/frontend:latest frontend
+          docker push $REGISTRY/pulsequeue/frontend:$IMAGE_TAG
+          docker push $REGISTRY/pulsequeue/frontend:latest
+
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Deploy to EKS Cluster
+        run: |
+          kubectl apply -k k8s/
+          kubectl rollout status deployment/frontend -n pulsequeue --timeout=180s
+          kubectl rollout status deployment/identity-service -n pulsequeue --timeout=180s
+          kubectl rollout status deployment/queue-service -n pulsequeue --timeout=240s

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsequeue-config
+  namespace: pulsequeue
+data:
+  NODE_PORT: "5001"
+  JAVA_PORT: "8080"
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  IDENTITY_DB_NAME: "identity_db"
+  QUEUE_DB_NAME: "queue_db"
+  IDENTITY_SERVICE_URL: "http://identity-service.pulsequeue.svc.cluster.local:5001"
